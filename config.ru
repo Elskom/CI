@@ -1,2 +1,2 @@
-require "./server"
+require "./CI"
 run CI
