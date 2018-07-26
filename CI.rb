@@ -32,8 +32,6 @@ class CI < Sinatra::Base
           puts "'skip news' label found!"
         end
       end
-      # todo: check for news entry files in Misc/NEWS or
-      # subdirectories like Misc/NEWS/<next version tag>.
       for file in @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number'])
         # todo: look in Misc/NEWS folder for files.
         @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
