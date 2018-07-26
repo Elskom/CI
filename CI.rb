@@ -33,9 +33,10 @@ class CI < Sinatra::Base
         end
       end
       for file in @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number'])
-        # todo: look in Misc/NEWS folder for files.
-        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-        puts "Misc/NEWS entry found!"
+        if file.start_with?("Misc/NEWS")
+          @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+          puts "Misc/NEWS entry found!"
+        end
       end
       @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
       puts "Misc/NEWS entry not found and 'skip news' is not added!"
