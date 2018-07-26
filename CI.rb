@@ -26,13 +26,21 @@ class CI < Sinatra::Base
   helpers do
     def process_pull_request(pull_request)
       @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending')
+      for label in @client.labels_for_issue(pull_request['base']['repo']['full_name'], pull_request['number'])
+        if label == "skip news"
+          @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+          puts "'skip news' label found!"
+        end
+      end
       # todo: check for news entry files in Misc/NEWS or
       # subdirectories like Misc/NEWS/<next version tag>.
-      sleep 2 # do busy work...
-      @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-      puts "Misc/NEWS entry found!"
-      # puts "Misc/NEWS entry not found and 'skip news' is not added!"
-      # puts "'skip news' label found!"
+      for file in @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number'])
+        # todo: look in Misc/NEWS folder for files.
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+        puts "Misc/NEWS entry found!"
+      end
+      @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
+      puts "Misc/NEWS entry not found and 'skip news' is not added!"
     end
   end
 end
