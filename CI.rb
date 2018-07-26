@@ -42,17 +42,17 @@ class CI < Sinatra::Base
       @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending')
       @client.labels_for_issue(pull_request['base']['repo']['full_name'], pull_request['number']).each do |label|
         # I am not sure if this is correct or not.
-        if label == "skip news"
-          @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-          puts "'skip news' label found!"
-        end
+        next unless label[:name] == "skip news"
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+        puts "'skip news' label found!"
+        return unless label[:name] != "skip news"
       end
       @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number']).each do |file|
         # I am not sure if this is correct or not.
-        if file.start_with?("Misc/NEWS")
-          @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-          puts "Misc/NEWS entry found!"
-        end
+        next unless file[:filename].start_with?("Misc/NEWS")
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+        puts "Misc/NEWS entry found!"
+        return unless !file[:filename].starts_with?("Misc/NEWS")
       end
       @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
       puts "Misc/NEWS entry not found and 'skip news' is not added!"
