@@ -20,19 +20,35 @@ class CI < Sinatra::Base
       if @payload["action"] == "opened"
         process_pull_request(@payload["pull_request"])
       end
+      # handle reopened action too.
+      if @payload["action"] == "reopened"
+        process_pull_request(@payload["pull_request"])
+      end
+      if @payload["action"] == "closed"
+        # todo: possibly check if pull requesed branch
+        # is in the same repository as
+        # @payload["pull_request"]['base']['repo']
+        # and if it is comment on closed pull request
+        # if the repo owner or admins want it deleted
+        # or not.
     end
   end
 
   helpers do
     def process_pull_request(pull_request)
+      # todo: read comments from repo /org admins though for things like
+      # "I approve this" and then approve the changes and then wait for
+      # "merge squashed/rebased/commit" (if enabled on repository).
       @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending')
-      for label in @client.labels_for_issue(pull_request['base']['repo']['full_name'], pull_request['number'])
+      @client.labels_for_issue(pull_request['base']['repo']['full_name'], pull_request['number']).each do |label|
+        # I am not sure if this is correct or not.
         if label == "skip news"
           @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
           puts "'skip news' label found!"
         end
       end
-      for file in @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number'])
+      @client.pull_request_files(pull_request['base']['repo']['full_name'], pull_request['number']).each do |file|
+        # I am not sure if this is correct or not.
         if file.start_with?("Misc/NEWS")
           @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
           puts "Misc/NEWS entry found!"
