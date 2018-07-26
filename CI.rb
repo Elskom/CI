@@ -31,6 +31,7 @@ class CI < Sinatra::Base
         # and if it is comment on closed pull request
         # if the repo owner or admins want it deleted
         # or not.
+      end
     end
   end
 
