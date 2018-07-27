@@ -25,17 +25,28 @@ class CI < Sinatra::Base
         process_pull_request(@payload["pull_request"])
       end
       if @payload["action"] == "closed"
-        # todo: possibly check if pull requesed branch
-        # is in the same repository as
-        # @payload["pull_request"]['base']['repo']
-        # and if it is comment on closed pull request
-        # if the repo owner or admins want it deleted
-        # or not.
+        process_pull_request_closed(@payload["pull_request"])
+      end
+      if @payload["action"] == "labeled"
+        process_pull_request(@payload["pull_request"])
+      end
+      if @payload["action"] == "unlabeled"
+        process_pull_request(@payload["pull_request"])
       end
     end
   end
 
   helpers do
+    def process_pull_request_closed(pull_request)
+      # todo: possibly check if pull requesed branch
+      # is in the same repository as
+      # pull_request['base']['repo']
+      # and if it is comment on closed pull request
+      # if the repo owner, admins, pull requestee
+      # wants it deleted or not if the CI has
+      # permision to.
+    end
+
     def process_pull_request(pull_request)
       # todo: read comments from repo /org admins though for things like
       # "I approve this" and then approve the changes and then wait for
