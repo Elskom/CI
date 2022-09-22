@@ -1,31 +1,26 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
+using CI;
 using Octokit;
+using Octokit.Webhooks;
+using Octokit.Webhooks.AspNetCore;
 
-namespace CI
-{
-    internal class Program
-    {
-        internal static GitHubClient client;
-
-        private static void Main(string[] args)
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddSingleton(
+        new GitHubClient(
+            new ProductHeaderValue(
+                "CI",
+                Assembly.GetEntryAssembly()!.GetName().Version!.ToString()))
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
+            Credentials = new Credentials(
+                Environment.GetEnvironmentVariable("GITHUB_APPLICATION_TOKEN"),
+                AuthenticationType.Bearer)
+        })
+    .AddSingleton<WebhookEventProcessor, CIWebhookEventProcessor>();
+Console.Write("Logging into github application...");
+var app = builder.Build();
+Console.WriteLine(" Done.");
+app.UseRouting()
+    .UseEndpoints(endpoints => endpoints.MapGitHubWebhooks());
 
-            Console.Write("Logging into github application...");
-            client = new GitHubClient(new ProductHeaderValue("CI", Assembly.GetEntryAssembly().GetName().Version.ToString()))
-            {
-                Credentials = new Credentials(GitHubAppToken.AppToken, AuthenticationType.Bearer)
-            };
-            Console.WriteLine(" Done.");
-            do
-            {
-                // prevent application from closing.
-            }
-            while (true);
-        }
-    }
-}
+app.Run();
