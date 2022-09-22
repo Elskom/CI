@@ -7,19 +7,23 @@ using Octokit.Webhooks.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddSingleton(
-        new GitHubClient(
+        (provider) =>
+        {
+            Console.Write("Logging into github application...");
+            var client = new GitHubClient(
             new ProductHeaderValue(
                 "CI",
                 Assembly.GetEntryAssembly()!.GetName().Version!.ToString()))
-        {
-            Credentials = new Credentials(
-                Environment.GetEnvironmentVariable("GITHUB_APPLICATION_TOKEN"),
+            {
+                Credentials = new Credentials(
+                builder.Configuration.GetSection("GithubApplicationToken").Value,
                 AuthenticationType.Bearer)
+            };
+            Console.WriteLine(" Done.");
+            return client;
         })
     .AddSingleton<WebhookEventProcessor, CIWebhookEventProcessor>();
-Console.Write("Logging into github application...");
 var app = builder.Build();
-Console.WriteLine(" Done.");
 app.UseRouting()
     .UseEndpoints(endpoints => endpoints.MapGitHubWebhooks());
 

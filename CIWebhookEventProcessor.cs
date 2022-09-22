@@ -61,7 +61,7 @@ public class CIWebhookEventProcessor : WebhookEventProcessor
             Convert.ToInt32(pullRequest.Number)).ConfigureAwait(false);
         NewCheckRunOutput newCheckRunOutput;
         CheckRunUpdate checkRunUpdate;
-        if (issue.Labels.Any(label => label.Name != "skip news"))
+        if (issue.Labels.Any(label => label.Name.Equals("skip news")))
         {
             newCheckRunOutput = new NewCheckRunOutput("Misc/NEWS", "'skip news' label found!");
             checkRunUpdate = new CheckRunUpdate
@@ -76,7 +76,7 @@ public class CIWebhookEventProcessor : WebhookEventProcessor
                 pullRequest.Base.Repo.Name,
                 check.Id,
                 checkRunUpdate).ConfigureAwait(false);
-            return;// label.Name == "skip news";
+            return;
         }
         var files = await this._client.PullRequest.Files(
             pullRequest.Base.Repo.Owner.Name,
@@ -97,7 +97,7 @@ public class CIWebhookEventProcessor : WebhookEventProcessor
                 pullRequest.Base.Repo.Name,
                 check.Id,
                 checkRunUpdate).ConfigureAwait(false);
-            return; // !file[:filename].starts_with ? ("Misc/NEWS");
+            return;
         }
 
         newCheckRunOutput = new NewCheckRunOutput("Misc/NEWS", "Misc/NEWS entry not found and 'skip news' is not added!");
