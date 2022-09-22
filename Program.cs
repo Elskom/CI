@@ -11,9 +11,9 @@ builder.Services
         {
             Console.Write("Logging into github application...");
             var client = new GitHubClient(
-            new ProductHeaderValue(
-                "CI",
-                Assembly.GetEntryAssembly()!.GetName().Version!.ToString()))
+                new ProductHeaderValue(
+                    "CI",
+                    Assembly.GetEntryAssembly()!.GetName().Version!.ToString()))
             {
                 Credentials = new Credentials(
                 builder.Configuration.GetSection("GithubApplicationToken").Value,
